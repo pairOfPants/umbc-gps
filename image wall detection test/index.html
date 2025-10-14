@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Directory to Grid Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .grid-container {
+            display: inline-block;
+            border: 1px solid #ccc;
+            line-height: 1;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Building Directory to Grid Converter</h1>
+    
+    <div class="controls">
+        <input type="file" id="imageInput" accept="image/*">
+        <button id="processBtn">Process Image</button>
+        <button id="findPathBtn" disabled>Find Path</button>
+        <div>
+            <label for="gridSize">Grid Size:</label>
+            <input type="range" id="gridSize" min="5" max="50" value="20">
+            <span id="gridSizeValue">20</span>px
+        </div>
+        <div>
+            <label for="threshold">Threshold:</label>
+            <input type="range" id="threshold" min="0" max="255" value="128">
+            <span id="thresholdValue">128</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <div>
+            <h3>Original Image</h3>
+            <canvas id="originalCanvas"></canvas>
+        </div>
+        <div>
+            <h3>Processed Grid</h3>
+            <canvas id="processedCanvas"></canvas>
+        </div>
+    </div>
+
+    <div>
+        <h3>Grid Representation</h3>
+        <div id="gridOutput"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
