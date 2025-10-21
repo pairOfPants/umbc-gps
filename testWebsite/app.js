@@ -16,6 +16,52 @@ const state = {
   mode: 'start', // 'start' or 'end'
 };
 
+// Optional hard-coded campus suggestions. If you prefer fully local suggestions
+// populate this array with { display_name, lat, lon } entries for common UMBC
+// buildings. If non-empty, these will be matched first (simple substring match).
+const campusSuggestions = [
+  { display_name: 'Albin O. Kuhn Library & Gallery', lat: '39.2546', lon: '-76.7139' },
+  { display_name: 'Engineering and Information Technology Building (EIT)', lat: '39.2529', lon: '-76.7139' },
+  { display_name: 'Retriever Activities Center (RAC)', lat: '39.2542', lon: '-76.7164' },
+  { display_name: 'University Center (UC)', lat: '39.2539', lon: '-76.7132' },
+  { display_name: 'Fine Arts Building', lat: '39.2532', lon: '-76.7110' },
+  { display_name: 'Performing Arts and Humanities Building (PAHB)', lat: '39.2537', lon: '-76.7122' },
+  { display_name: 'Math/Psychology Building', lat: '39.2541', lon: '-76.7127' },
+  { display_name: 'Biological Sciences Building', lat: '39.2547', lon: '-76.7117' },
+  { display_name: 'Chemistry Building', lat: '39.2542', lon: '-76.7112' },
+  { display_name: 'Physics Building', lat: '39.2540', lon: '-76.7107' },
+  { display_name: 'Information Technology/Engineering (ITE)', lat: '39.2540', lon: '-76.7132' },
+  { display_name: 'Public Policy Building', lat: '39.2552', lon: '-76.7132' },
+  { display_name: 'Sondheim Hall', lat: '39.2545', lon: '-76.7122' },
+  { display_name: 'Sherman Hall', lat: '39.2547', lon: '-76.7127' },
+  { display_name: 'Administration Building', lat: '39.2547', lon: '-76.7132' },
+  { display_name: 'The Commons', lat: '39.2542', lon: '-76.7137' },
+  { display_name: 'Patapsco Hall', lat: '39.2522', lon: '-76.7132' },
+  { display_name: 'Potomac Hall', lat: '39.2522', lon: '-76.7142' },
+  { display_name: 'Chesapeake Hall', lat: '39.2522', lon: '-76.7152' },
+  { display_name: 'Susquehanna Hall', lat: '39.2522', lon: '-76.7162' },
+  { display_name: 'Erickson Hall', lat: '39.2512', lon: '-76.7132' },
+  { display_name: 'Harbor Hall', lat: '39.2512', lon: '-76.7142' },
+  { display_name: 'Walker Avenue Apartments', lat: '39.2502', lon: '-76.7132' },
+  { display_name: 'West Hill Apartments', lat: '39.2502', lon: '-76.7142' },
+  { display_name: 'Hillside Apartments', lat: '39.2502', lon: '-76.7152' },
+  { display_name: 'Center Road Apartments', lat: '39.2502', lon: '-76.7162' },
+  { display_name: 'True Grits Dining Hall', lat: '39.2517', lon: '-76.7137' },
+  { display_name: 'UMBC Event Center', lat: '39.2512', lon: '-76.7172' },
+  { display_name: 'Potomac Parking Garage', lat: '39.2527', lon: '-76.7147' },
+  { display_name: 'Administration Parking Garage', lat: '39.2552', lon: '-76.7137' },
+  { display_name: 'Commons Garage', lat: '39.2547', lon: '-76.7142' },
+  { display_name: 'Walker Avenue Garage', lat: '39.2507', lon: '-76.7137' },
+  { display_name: 'Fine Arts Parking Lot', lat: '39.2532', lon: '-76.7102' },
+  { display_name: 'PAHB Parking Lot', lat: '39.2537', lon: '-76.7117' },
+  { display_name: 'UMBC Police', lat: '39.2557', lon: '-76.7132' },
+  { display_name: 'UMBC Bookstore', lat: '39.2542', lon: '-76.7137' },
+  { display_name: 'UMBC Stadium', lat: '39.2492', lon: '-76.7152' },
+  { display_name: 'UMBC Technology Center', lat: '39.2562', lon: '-76.7102' },
+  { display_name: 'bwtech@UMBC North', lat: '39.2572', lon: '-76.7102' },
+  { display_name: 'bwtech@UMBC South', lat: '39.2472', lon: '-76.7152' }
+];
+
 /**
  * Name
  *   initMap
@@ -81,22 +127,257 @@ function attachHandlers() {
   const modeBtn = document.getElementById('mode-btn');
   const modeLabel = document.getElementById('mode-label');
   const clearBtn = document.getElementById('clear-btn');
+  const startInput = document.getElementById('start-input');
+  const endInput = document.getElementById('end-input');
 
+  // Map click mode (disabled by default). When enabled the mode cycles between
+  // setting start and end on each click — this preserves original behavior.
+  state.mapClickEnabled = false;
   modeBtn.addEventListener('click', () => {
-    if (state.mode === 'start') {
-      state.mode = 'end';
-      modeBtn.textContent = 'Set Start';
-      modeLabel.textContent = 'Click map to set: End';
-    } else {
-      state.mode = 'start';
-      modeBtn.textContent = 'Set End';
-      modeLabel.textContent = 'Click map to set: Start';
-    }
+    state.mapClickEnabled = !state.mapClickEnabled;
+    modeBtn.textContent = `Map Click: ${state.mapClickEnabled ? 'On' : 'Off'}`;
+    modeLabel.textContent = state.mapClickEnabled ? 'Click map to set Start / End' : 'Use the search fields and click Route.';
   });
 
   clearBtn.addEventListener('click', clearAll);
 
-  state.map.on('click', onMapClick);
+
+  // Only allow Enter to trigger route if both inputs have values and not during suggestion selection
+  startInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && startInput.value && endInput.value) {
+      // Only call routeFromInputs if both inputs are filled and suggestions are not open
+      const startSug = document.getElementById('start-suggestions');
+      const endSug = document.getElementById('end-suggestions');
+      if (!startSug.innerHTML && !endSug.innerHTML) {
+        routeFromInputs();
+      }
+    }
+  });
+  endInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && startInput.value && endInput.value) {
+      const startSug = document.getElementById('start-suggestions');
+      const endSug = document.getElementById('end-suggestions');
+      if (!startSug.innerHTML && !endSug.innerHTML) {
+        routeFromInputs();
+      }
+    }
+  });
+
+  // Suggestion handling (debounced)
+  const startSuggestionsEl = document.getElementById('start-suggestions');
+  const endSuggestionsEl = document.getElementById('end-suggestions');
+  const feedbackEl = document.getElementById('search-feedback');
+
+  const debouncedStart = debounce((q) => updateSuggestions(q, startSuggestionsEl, 'start'), 300);
+  const debouncedEnd = debounce((q) => updateSuggestions(q, endSuggestionsEl, 'end'), 300);
+
+  startInput.addEventListener('input', (e) => { feedbackEl.textContent = ''; debouncedStart(e.target.value); });
+  endInput.addEventListener('input', (e) => { feedbackEl.textContent = ''; debouncedEnd(e.target.value); });
+
+  // Close suggestions on outside click
+  document.addEventListener('click', (ev) => {
+    if (!ev.target.closest('.search-group')) {
+      startSuggestionsEl.innerHTML = '';
+      endSuggestionsEl.innerHTML = '';
+    }
+  });
+
+  state.map.on('click', (e) => {
+    if (!state.mapClickEnabled) return;
+    // alternate setting start/end based on which is set already
+    if (!state.startKey) state.mode = 'start';
+    else if (!state.endKey && state.startKey) state.mode = 'end';
+    else {
+      // both set: reset to start to begin a new route
+      clearAll();
+      state.mode = 'start';
+    }
+    onMapClick(e);
+  });
+}
+
+/**
+ * Name
+ *   routeFromInputs
+ * Description
+ *   Reads the start/end input fields, geocodes them via Nominatim, snaps to nearest
+ *   graph nodes, places markers, and computes the route.
+ */
+function routeFromInputs() {
+  const startStr = document.getElementById('start-input').value.trim();
+  const endStr = document.getElementById('end-input').value.trim();
+  const feedbackEl = document.getElementById('search-feedback');
+  if (!startStr || !endStr) {
+    alert('Please enter both Start and End locations.');
+    return;
+  }
+
+  // Try to use the first geocoding result for each string
+  Promise.all([ geocodeNominatim(startStr), geocodeNominatim(endStr) ])
+    .then(([s, e]) => {
+      if (!s || !e) {
+        const parts = [];
+        if (!s) parts.push('Start');
+        if (!e) parts.push('End');
+        feedbackEl.textContent = `${parts.join(' and ')} location not found.`;
+        return;
+      }
+      // Snap to nearest nodes in the graph
+      const nearestS = findNearestNode(parseFloat(s.lat), parseFloat(s.lon), state.graph);
+      const nearestE = findNearestNode(parseFloat(e.lat), parseFloat(e.lon), state.graph);
+      if (!nearestS || !nearestE) {
+        alert('Could not find nearby path nodes for one or both locations.');
+        return;
+      }
+      state.startKey = nearestS.key;
+      state.endKey = nearestE.key;
+      placeMarker('start', nearestS.lat, nearestS.lng);
+      placeMarker('end', nearestE.lat, nearestE.lng);
+      tryRoute();
+    })
+    .catch(err => {
+      console.error('Geocoding error', err);
+      alert('Geocoding failed. See console for details.');
+    });
+}
+
+/**
+ * Name
+ *   geocodeNominatim
+ * Description
+ *   Simple Nominatim forward geocoding. Returns the first result or null.
+ */
+function geocodeNominatim(q) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`;
+  return fetch(url, { headers: { 'Accept-Language': 'en' } })
+    .then(r => r.json())
+    .then(results => results && results.length ? results[0] : null)
+    .catch(() => null);
+}
+
+/**
+ * Name
+ *   suggestNominatim
+ * Description
+ *   Returns up to `limit` suggestions from Nominatim for the query string.
+ */
+function suggestNominatim(q, limit = 5) {
+  if (!q || q.trim().length === 0) return Promise.resolve([]);
+  const qlc = q.trim().toLowerCase();
+  // If campusSuggestions is populated, return local matches first (substring match)
+  if (Array.isArray(campusSuggestions) && campusSuggestions.length > 0) {
+    const matches = campusSuggestions.filter(s => s.display_name.toLowerCase().includes(qlc)).slice(0, limit);
+    if (matches.length > 0) return Promise.resolve(matches);
+    // fallthrough to Nominatim if no campus match
+  }
+
+  // Use map viewport to constrain Nominatim results if available
+  let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=${limit}&addressdetails=1`;
+  try {
+    if (state.map && state.map.getBounds) {
+      const b = state.map.getBounds();
+      if (b && b.isValid()) {
+        // viewbox expects: minLon,minLat,maxLon,maxLat
+        const southWest = b.getSouthWest();
+        const northEast = b.getNorthEast();
+        const viewbox = [southWest.lng, southWest.lat, northEast.lng, northEast.lat].join(',');
+        url += `&viewbox=${encodeURIComponent(viewbox)}&bounded=1`;
+      }
+    }
+  } catch (err) {
+    // ignore and call without viewbox
+  }
+
+  return fetch(url, { headers: { 'Accept-Language': 'en' } })
+    .then(r => r.json())
+    .then(results => results || [])
+    .catch(() => []);
+}
+
+/**
+ * Name
+ *   updateSuggestions
+ * Description
+ *   Fetches suggestions and updates the given suggestions element.
+ */
+function updateSuggestions(query, listEl, which) {
+  listEl.innerHTML = '';
+  if (!query || query.trim().length === 0) return;
+  suggestNominatim(query, 6).then(results => {
+    if (!results || results.length === 0) {
+      // show a single disabled item to indicate no results
+      const li = document.createElement('li');
+      li.textContent = 'No suggestions';
+      li.setAttribute('aria-disabled', 'true');
+      listEl.appendChild(li);
+      return;
+    }
+    for (const r of results) {
+      const li = document.createElement('li');
+      li.textContent = r.display_name;
+      li.tabIndex = 0;
+      li.addEventListener('click', () => selectSuggestion(r, which));
+      li.addEventListener('keydown', (e) => { if (e.key === 'Enter') selectSuggestion(r, which); });
+      listEl.appendChild(li);
+    }
+  }).catch(() => {
+    const li = document.createElement('li');
+    li.textContent = 'Error fetching suggestions';
+    listEl.appendChild(li);
+  });
+}
+
+/**
+ * Name
+ *   selectSuggestion
+ * Description
+ *   Fill the input with the selected suggestion, store coordinates on the input element,
+ *   clear suggestions, and optionally trigger routing if both inputs have coords.
+ */
+function selectSuggestion(result, which) {
+  const startInput = document.getElementById('start-input');
+  const endInput = document.getElementById('end-input');
+  const listEl = document.getElementById(which === 'start' ? 'start-suggestions' : 'end-suggestions');
+  if (which === 'start') {
+    startInput.value = result.display_name;
+    startInput.dataset.lat = result.lat;
+    startInput.dataset.lon = result.lon;
+  } else {
+    endInput.value = result.display_name;
+    endInput.dataset.lat = result.lat;
+    endInput.dataset.lon = result.lon;
+  }
+  listEl.innerHTML = '';
+  // If both inputs have coords, always use start for start and end for end
+  if (startInput.dataset.lat && startInput.dataset.lon && endInput.dataset.lat && endInput.dataset.lon) {
+    console.log('[selectSuggestion] Start input:', startInput.value, startInput.dataset.lat, startInput.dataset.lon);
+    console.log('[selectSuggestion] End input:', endInput.value, endInput.dataset.lat, endInput.dataset.lon);
+    const nearestS = findNearestNode(parseFloat(startInput.dataset.lat), parseFloat(startInput.dataset.lon), state.graph);
+    const nearestE = findNearestNode(parseFloat(endInput.dataset.lat), parseFloat(endInput.dataset.lon), state.graph);
+    console.log('[selectSuggestion] Nearest start node:', nearestS);
+    console.log('[selectSuggestion] Nearest end node:', nearestE);
+    const feedbackEl = document.getElementById('search-feedback');
+    if (!nearestS || !nearestE) {
+      feedbackEl.textContent = 'Could not find nearby path nodes for one or both selected places.';
+      return;
+    }
+    state.startKey = nearestS.key;
+    state.endKey = nearestE.key;
+    placeMarker('start', nearestS.lat, nearestS.lng);
+    placeMarker('end', nearestE.lat, nearestE.lng);
+    tryRoute();
+  }
+}
+
+/**
+ * Simple debounce helper
+ */
+function debounce(fn, wait) {
+  let t = null;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
 }
 
 /**
@@ -168,6 +449,7 @@ function clearAll() {
  *   void
  */
 function placeMarker(which, lat, lng) {
+  console.log(`[placeMarker] Placing ${which} marker at`, lat, lng);
   const icon = L.divIcon({
     className: 'custom-marker',
     html: `<div style="background:${which === 'start' ? '#22c55e' : '#ef4444'};width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 2px rgba(0,0,0,.6);"></div>`,
@@ -215,6 +497,7 @@ function setDistanceLabel(text) {
  *   void
  */
 function tryRoute() {
+  // Guard: only run if both keys are set and not being reset
   if (!state.startKey || !state.endKey || !state.graph) return;
   if (state.startKey === state.endKey) {
     if (state.routeLine) { state.map.removeLayer(state.routeLine); state.routeLine = null; }
@@ -222,9 +505,17 @@ function tryRoute() {
     return;
   }
 
+  // Prevent duplicate route drawing: only run if keys are not being reset
+  if (state._routingInProgress) return;
+  state._routingInProgress = true;
+
   const { path, distance } = dijkstra(state.graph, state.startKey, state.endKey);
   if (!path || path.length === 0 || !isFinite(distance)) {
-    alert('No route found between the selected points.');
+    // Only clear markers if a route was previously drawn
+    if (state.startMarker) { state.map.removeLayer(state.startMarker); state.startMarker = null; }
+    if (state.endMarker) { state.map.removeLayer(state.endMarker); state.endMarker = null; }
+    setDistanceLabel('No route found between the selected points.');
+    state._routingInProgress = false;
     return;
   }
 
@@ -239,6 +530,7 @@ function tryRoute() {
 
   const pretty = formatMeters(distance);
   setDistanceLabel(`Distance: ${pretty}`);
+  state._routingInProgress = false;
 }
 
 /**

@@ -10,12 +10,22 @@
 <body>
   <div id="topbar">
     <div class="controls">
-      <button id="mode-btn" title="Click to switch between setting Start and End">Set End</button>
+      <div class="search-group">
+        <input id="start-input" type="search" placeholder="Start building or place (e.g. 'Library')" aria-label="Start" autocomplete="off" />
+        <ul id="start-suggestions" class="suggestions" role="listbox" aria-label="Start suggestions"></ul>
+      </div>
+      <div class="search-group">
+        <input id="end-input" type="search" placeholder="End building or place (e.g. 'Engineering Bldg')" aria-label="End" autocomplete="off" />
+        <ul id="end-suggestions" class="suggestions" role="listbox" aria-label="End suggestions"></ul>
+      </div>
+  <!-- Route button removed: routing is automatic when both points are selected -->
       <button id="clear-btn">Clear</button>
+      <button id="mode-btn" title="Toggle map click mode">Map Click: Off</button>
     </div>
     <div class="status">
-      <span id="mode-label">Click map to set: Start</span>
+      <span id="mode-label">Use the search fields and click Route, or enable Map Click.</span>
       <span id="distance-label"></span>
+      <div id="search-feedback" class="search-feedback" aria-live="polite"></div>
     </div>
   </div>
   <div id="map"></div>

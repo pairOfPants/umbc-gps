@@ -14,8 +14,53 @@ html, body {
   color: #fff;
 }
 
+#topbar .controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#topbar .controls input[type="search"] {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #fff;
+  color: #001018;
+  min-width: 200px;
+  height: 30px; /* smaller height */
+}
+
+.search-group { position: relative; }
+.suggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  max-height: 200px;
+  overflow: auto;
+  z-index: 2000;
+  border-radius: 6px;
+}
+.suggestions li {
+  padding: 6px 8px;
+  cursor: pointer;
+  color: #111;
+}
+.suggestions li:hover, .suggestions li[aria-selected="true"] {
+  background: #eef2ff;
+}
+
+.search-feedback {
+  margin-left: 12px;
+  color: #fbbf24; /* yellow-ish */
+  font-weight: 600;
+}
+
 #topbar .controls button {
-  margin-right: 8px;
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #334155;
@@ -24,6 +69,7 @@ html, body {
   font-weight: 600;
   cursor: pointer;
 }
+/* No special style needed for removed Route button */
 
 #topbar .controls button#clear-btn {
   background: #e11d48;

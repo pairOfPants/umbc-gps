@@ -136,6 +136,14 @@ class Square
     setName(name) { this.#name = name;}
     isWalkable() { return this.#isWalkable;}
     setWalkable(isWalkable) { this.#isWalkable = isWalkable;}
+
+    gridToWorldCoordinates()
+    {
+        return [this.#topLeft.pointsToCoordinates(this.#topLeft.getX(), this.#topLeft.getY(), this.#topLeft.getZ()),
+                this.#topRight.pointsToCoordinates(this.#topRight.getX(), this.#topRight.getY(), this.#topRight.getZ()),
+                this.#bottomLeft.pointsToCoordinates(this.#bottomLeft.getX(), this.#bottomLeft.getY(), this.#bottomLeft.getZ()),
+                this.#bottomRight.pointsToCoordinates(this.#bottomRight.getX(), this.#bottomRight.getY(), this.#bottomRight.getZ())];
+    }
 }
 
 class Grid{
@@ -152,6 +160,7 @@ class Grid{
         this.#unitsPerCell = unitsPerCell;
         // initialize a 2D array to hold Square objects (or undefined)
         this.#grid = Array.from({ length: this.#length }, () => Array(this.#width).fill(undefined));
+        this.#length = [1,3,4,5,6,7];
     }
 
     getLength() { return this.#length;}
@@ -231,6 +240,86 @@ class Grid{
             console.log(horizontalSeparator());
         }
     }
+}
+
+class User
+{
+    #firsName;
+    #lastName;
+    #email;
+    #password;
+    #currentLocation;
+    constructor(firstName, lastName, email, password)
+    {
+        this.#firsName = firstName;
+        this.#lastName = lastName;
+        this.#email = email;
+        this.#password = password; //TODO: implement hashing
+    }
+
+    getFirstName() { return this.#firsName;}
+    getLastName() { return this.#lastName;}
+    getEmail() { return this.#email;}
+    getPassword() { return this.#password;}
+
+    setFirstName(firstName) { this.#firsName = firstName;}
+    setLastName(lastName) { this.#lastName = lastName;}
+    setEmail(email) { this.#email = email;}
+    setPassword(password) { this.#password = password;}
+    setCurrentLocation(location) { this.#currentLocation = location;}
+    getCurrentLocation() { return this.#currentLocation;}
+
+}
+
+class Building{
+    #name; //Full name of building: E.g. "Performance Arts and Humanities Building"
+    #shortname; //Abbreviated name of building: E.g. "PAHB"
+    #department; //Departmment: E.g. "Performance Arts and Humanities"
+    #worldCoords; //realtime coordinates of building gotten from google maps API
+    #gridCoords; //convrted coordinates to grid system
+    #squaresCovered; //total list of squares the building covers.
+    #squareOffsets; //offset of each dimension such that 
+    #floors;
+    #numFloors;
+    constructor(name, shortname, department, worldCoords, gridCoords, squaresCovered, squareOffsets, floors)
+    {
+        this.#name = name;
+        this.#shortname = shortname;
+        this.#department = department;
+        this.#worldCoords = worldCoords; //list of Point objects
+        this.#gridCoords = gridCoords; //list of Point objects
+        this.#squaresCovered = squaresCovered; //list of Square objects
+        this.#squareOffsets = []; //initialize to empty list
+        this.#squareOffsets.push(gridCoords[0]); 
+        this.#squareOffsets.push(gridCoords[1]); 
+        this.#squareOffsets.push(gridCoords[2]); 
+        this.#squareOffsets.push(gridCoords[3]); 
+
+        this.#floors = floors; //list of Floor objects
+        this.#numFloors = floors.length;
+    }
+
+    getName() { return this.#name;}
+    getShortName() { return this.#shortname;}
+    getDepartment() { return this.#department;}
+    getWorldCoords() { return this.#worldCoords;}
+    getGridCoords() { return this.#gridCoords;}
+    getSquaresCovered() { return this.#squaresCovered;}
+    getSquareOffsets() { return this.#squareOffsets;}
+    getFloors() { return this.#floors;}
+    getNumFloors() { return this.#numFloors;}
+
+    setName(name) { this.#name = name;}
+    setShortName(shortname) { this.#shortname = shortname;}
+    setDepartment(department) { this.#department = department;}
+    setWorldCoords(worldCoords) { this.#worldCoords = worldCoords;}
+    setGridCoords(gridCoords) { this.#gridCoords = gridCoords;}
+    setSquaresCovered(squaresCovered) { this.#squaresCovered = squaresCovered;}
+    setSquareOffsets(squareOffsets) { this.#squareOffsets = squareOffsets;}
+    
+    addFloorToBuilding(floor) { this.#floors.push(floor); this.#numFloors = this.#floors.length;}
+    removeFloorFromBuilding(floor) { this.#floors = this.#floors.filter(f => f !== floor); this.#numFloors = this.#floors.length;}
+
 }
 
 // Export classes for use in tests or other modules (CommonJS)
