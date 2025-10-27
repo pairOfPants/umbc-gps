@@ -1,7 +1,7 @@
 /*
   Simple campus routing on Leaflet using campus.geojson (TypeScript port)
   - Builds a graph from LineString/MultiLineString features that look like walkable/driveable paths
-  - Click to set Start and End; computes shortest path (Dijkstra) along the graph
+  - Click to set Start and End; computes shortest path (_dijkstra) along the graph
 */
 
 // Minimal declarations to avoid installing Leaflet typings in this demo.
@@ -29,7 +29,7 @@ interface NearestNodeResult {
   d: number;
 }
 
-interface State {
+interface _state {
   map: any | null; // L.Map
   geojson: any | null; // GeoJSON.FeatureCollection
   graph: Graph | null;
@@ -43,7 +43,7 @@ interface State {
   _routingInProgress?: boolean;
 }
 
-const state: State = {
+const _state: _state = {
   map: null,
   geojson: null,
   graph: null,
@@ -58,7 +58,7 @@ const state: State = {
 // Optional hard-coded campus suggestions. If you prefer fully local suggestions
 // populate this array with { display_name, lat, lon } entries for common UMBC
 // buildings. If non-empty, these will be matched first (simple substring match).
-const campusSuggestions: Array<{ display_name: string; lat: string; lon: string; }> = [
+const _campusSuggestions: Array<{ display_name: string; lat: string; lon: string; }> = [
   { display_name: 'Albin O. Kuhn Library & Gallery', lat: '39.2546', lon: '-76.7139' },
   { display_name: 'Engineering and Information Technology Building (EIT)', lat: '39.2529', lon: '-76.7139' },
   { display_name: 'Retriever Activities Center (RAC)', lat: '39.2542', lon: '-76.7164' },
@@ -101,37 +101,37 @@ const campusSuggestions: Array<{ display_name: string; lat: string; lon: string;
   { display_name: 'bwtech@UMBC South', lat: '39.2472', lon: '-76.7152' }
 ];
 
-/** initMap: Initializes the map and loads data */
-function initMap(): void {
-  state.map = L.map('map');
+/** _initMap: Initializes the map and loads data */
+function _initMap(): void {
+  _state.map = L.map('map');
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 20,
     attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(state.map);
+  }).addTo(_state.map);
 
   fetch('campus.geojson')
     .then(r => r.json())
     .then((data: any) => {
-      state.geojson = data;
-      const graph = buildGraphFromGeoJSON(data);
-      state.graph = graph;
+      _state.geojson = data;
+      const graph = _buildGraphFromGeoJSON(data);
+      _state.graph = graph;
 
       // Show the path network on the map (light gray)
       L.geoJSON(graph.displayFeatures, {
         style: { color: '#808080', weight: 2, opacity: 0.7 }
-      }).addTo(state.map);
+      }).addTo(_state.map);
 
       if (graph.bounds && graph.bounds.isValid()) {
-        state.map.fitBounds(graph.bounds.pad(0.05));
+        _state.map.fitBounds(graph.bounds.pad(0.05));
       } else if (data.bbox) {
         const [minX, minY, maxX, maxY] = data.bbox as [number, number, number, number];
-        state.map.fitBounds([[minY, minX], [maxY, maxX]]);
+        _state.map.fitBounds([[minY, minX], [maxY, maxX]]);
       } else {
-        state.map.setView([39.255, -76.712], 15);
+        _state.map.setView([39.255, -76.712], 15);
       }
 
-      attachHandlers();
+      _attachHandlers();
     })
     .catch(err => {
       console.error('Failed to load campus.geojson', err);
@@ -139,8 +139,8 @@ function initMap(): void {
     });
 }
 
-/** attachHandlers: wires up UI and map interactions */
-function attachHandlers(): void {
+/** _attachHandlers: wires up UI and map interactions */
+function _attachHandlers(): void {
   const modeBtn = document.getElementById('mode-btn') as HTMLButtonElement;
   const modeLabel = document.getElementById('mode-label') as HTMLSpanElement;
   const clearBtn = document.getElementById('clear-btn') as HTMLButtonElement;
@@ -149,14 +149,14 @@ function attachHandlers(): void {
 
   // Map click mode (disabled by default). When enabled the mode cycles between
   // setting start and end on each click — this preserves original behavior.
-  state.mapClickEnabled = false;
+  _state.mapClickEnabled = false;
   modeBtn.addEventListener('click', () => {
-    state.mapClickEnabled = !state.mapClickEnabled;
-    modeBtn.textContent = `Map Click: ${state.mapClickEnabled ? 'On' : 'Off'}`;
-    modeLabel.textContent = state.mapClickEnabled ? 'Click map to set Start / End' : 'Use the search fields and click Route.';
+    _state.mapClickEnabled = !_state.mapClickEnabled;
+    modeBtn.textContent = `Map Click: ${_state.mapClickEnabled ? 'On' : 'Off'}`;
+    modeLabel.textContent = _state.mapClickEnabled ? 'Click map to set Start / End' : 'Use the search fields and click Route.';
   });
 
-  clearBtn.addEventListener('click', clearAll);
+  clearBtn.addEventListener('click', _clearAll);
 
   // Only allow Enter to trigger route if both inputs have values and not during suggestion selection
   startInput.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -164,7 +164,7 @@ function attachHandlers(): void {
       const startSug = document.getElementById('start-suggestions') as HTMLUListElement;
       const endSug = document.getElementById('end-suggestions') as HTMLUListElement;
       if (!startSug.innerHTML && !endSug.innerHTML) {
-        routeFromInputs();
+        _routeFromInputs();
       }
     }
   });
@@ -173,7 +173,7 @@ function attachHandlers(): void {
       const startSug = document.getElementById('start-suggestions') as HTMLUListElement;
       const endSug = document.getElementById('end-suggestions') as HTMLUListElement;
       if (!startSug.innerHTML && !endSug.innerHTML) {
-        routeFromInputs();
+        _routeFromInputs();
       }
     }
   });
@@ -183,8 +183,8 @@ function attachHandlers(): void {
   const endSuggestionsEl = document.getElementById('end-suggestions') as HTMLUListElement;
   const feedbackEl = document.getElementById('search-feedback') as HTMLDivElement;
 
-  const debouncedStart = debounce((q: string) => updateSuggestions(q, startSuggestionsEl, 'start'), 300);
-  const debouncedEnd = debounce((q: string) => updateSuggestions(q, endSuggestionsEl, 'end'), 300);
+  const debouncedStart = _debounce((q: string) => _updateSuggestions(q, startSuggestionsEl, 'start'), 300);
+  const debouncedEnd = _debounce((q: string) => _updateSuggestions(q, endSuggestionsEl, 'end'), 300);
 
   startInput.addEventListener('input', (e: Event) => { feedbackEl.textContent = ''; debouncedStart((e.target as HTMLInputElement).value); });
   endInput.addEventListener('input', (e: Event) => { feedbackEl.textContent = ''; debouncedEnd((e.target as HTMLInputElement).value); });
@@ -198,22 +198,22 @@ function attachHandlers(): void {
     }
   });
 
-  state.map.on('click', (e: any) => {
-    if (!state.mapClickEnabled) return;
+  _state.map.on('click', (e: any) => {
+    if (!_state.mapClickEnabled) return;
     // alternate setting start/end based on which is set already
-    if (!state.startKey) state.mode = 'start';
-    else if (!state.endKey && state.startKey) state.mode = 'end';
+    if (!_state.startKey) _state.mode = 'start';
+    else if (!_state.endKey && _state.startKey) _state.mode = 'end';
     else {
       // both set: reset to start to begin a new route
-      clearAll();
-      state.mode = 'start';
+      _clearAll();
+      _state.mode = 'start';
     }
-    onMapClick(e);
+    _onMapClick(e);
   });
 }
 
-/** routeFromInputs: geocode, snap to graph, route */
-function routeFromInputs(): void {
+/** _routeFromInputs: geocode, snap to graph, route */
+function _routeFromInputs(): void {
   const startStr = (document.getElementById('start-input') as HTMLInputElement).value.trim();
   const endStr = (document.getElementById('end-input') as HTMLInputElement).value.trim();
   const feedbackEl = document.getElementById('search-feedback') as HTMLDivElement;
@@ -222,7 +222,7 @@ function routeFromInputs(): void {
     return;
   }
 
-  Promise.all([ geocodeNominatim(startStr), geocodeNominatim(endStr) ])
+  Promise.all([ _geocodeNominatim(startStr), _geocodeNominatim(endStr) ])
     .then(([s, e]) => {
       if (!s || !e) {
         const parts: string[] = [];
@@ -232,18 +232,18 @@ function routeFromInputs(): void {
         return;
       }
       // Snap to nearest nodes in the graph
-      if (!state.graph) return;
-      const nearestS = findNearestNode(parseFloat(s.lat), parseFloat(s.lon), state.graph);
-      const nearestE = findNearestNode(parseFloat(e.lat), parseFloat(e.lon), state.graph);
+      if (!_state.graph) return;
+      const nearestS = _findNearestNode(parseFloat(s.lat), parseFloat(s.lon), _state.graph);
+      const nearestE = _findNearestNode(parseFloat(e.lat), parseFloat(e.lon), _state.graph);
       if (!nearestS || !nearestE) {
         alert('Could not find nearby path nodes for one or both locations.');
         return;
       }
-      state.startKey = nearestS.key;
-      state.endKey = nearestE.key;
-      placeMarker('start', nearestS.lat, nearestS.lng);
-      placeMarker('end', nearestE.lat, nearestE.lng);
-      tryRoute();
+      _state.startKey = nearestS.key;
+      _state.endKey = nearestE.key;
+      _placeMarker('start', nearestS.lat, nearestS.lng);
+      _placeMarker('end', nearestE.lat, nearestE.lng);
+      _tryRoute();
     })
     .catch(err => {
       console.error('Geocoding error', err);
@@ -251,8 +251,8 @@ function routeFromInputs(): void {
     });
 }
 
-/** geocodeNominatim: forward geocoding, first result or null */
-function geocodeNominatim(q: string): Promise<any | null> {
+/** _geocodeNominatim: forward geocoding, first result or null */
+function _geocodeNominatim(q: string): Promise<any | null> {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`;
   return fetch(url, { headers: { 'Accept-Language': 'en' } })
     .then(r => r.json())
@@ -260,19 +260,19 @@ function geocodeNominatim(q: string): Promise<any | null> {
     .catch(() => null);
 }
 
-/** suggestNominatim: suggestions */
-function suggestNominatim(q: string, limit = 5): Promise<any[]> {
+/** _suggestNominatim: suggestions */
+function _suggestNominatim(q: string, limit = 5): Promise<any[]> {
   if (!q || q.trim().length === 0) return Promise.resolve([]);
   const qlc = q.trim().toLowerCase();
-  if (Array.isArray(campusSuggestions) && campusSuggestions.length > 0) {
-    const matches = campusSuggestions.filter(s => s.display_name.toLowerCase().includes(qlc)).slice(0, limit);
+  if (Array.isArray(_campusSuggestions) && _campusSuggestions.length > 0) {
+    const matches = _campusSuggestions.filter(s => s.display_name.toLowerCase().includes(qlc)).slice(0, limit);
     if (matches.length > 0) return Promise.resolve(matches as any[]);
   }
 
   let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=${limit}&addressdetails=1`;
   try {
-    if (state.map && state.map.getBounds) {
-      const b = state.map.getBounds();
+    if (_state.map && _state.map.getBounds) {
+      const b = _state.map.getBounds();
       if (b && b.isValid()) {
         const southWest = b.getSouthWest();
         const northEast = b.getNorthEast();
@@ -290,11 +290,11 @@ function suggestNominatim(q: string, limit = 5): Promise<any[]> {
     .catch(() => []);
 }
 
-/** updateSuggestions: render suggestion list */
-function updateSuggestions(query: string, listEl: HTMLElement, which: 'start' | 'end'): void {
+/** _updateSuggestions: render suggestion list */
+function _updateSuggestions(query: string, listEl: HTMLElement, which: 'start' | 'end'): void {
   listEl.innerHTML = '';
   if (!query || query.trim().length === 0) return;
-  suggestNominatim(query, 6).then(results => {
+  _suggestNominatim(query, 6).then(results => {
     if (!results || results.length === 0) {
       const li = document.createElement('li');
       li.textContent = 'No suggestions';
@@ -306,8 +306,8 @@ function updateSuggestions(query: string, listEl: HTMLElement, which: 'start' | 
       const li = document.createElement('li');
       li.textContent = r.display_name;
       li.tabIndex = 0;
-      li.addEventListener('click', () => selectSuggestion(r, which));
-      li.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') selectSuggestion(r, which); });
+      li.addEventListener('click', () => _selectSuggestion(r, which));
+      li.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') _selectSuggestion(r, which); });
       listEl.appendChild(li);
     }
   }).catch(() => {
@@ -317,8 +317,8 @@ function updateSuggestions(query: string, listEl: HTMLElement, which: 'start' | 
   });
 }
 
-/** selectSuggestion: fill input and maybe route */
-function selectSuggestion(result: any, which: 'start' | 'end'): void {
+/** _selectSuggestion: fill input and maybe route */
+function _selectSuggestion(result: any, which: 'start' | 'end'): void {
   const startInput = document.getElementById('start-input') as HTMLInputElement;
   const endInput = document.getElementById('end-input') as HTMLInputElement;
   const listEl = document.getElementById(which === 'start' ? 'start-suggestions' : 'end-suggestions') as HTMLElement;
@@ -333,24 +333,24 @@ function selectSuggestion(result: any, which: 'start' | 'end'): void {
   }
   listEl.innerHTML = '';
   if ((startInput as any).dataset.lat && (startInput as any).dataset.lon && (endInput as any).dataset.lat && (endInput as any).dataset.lon) {
-    if (!state.graph) return;
-    const nearestS = findNearestNode(parseFloat((startInput as any).dataset.lat), parseFloat((startInput as any).dataset.lon), state.graph);
-    const nearestE = findNearestNode(parseFloat((endInput as any).dataset.lat), parseFloat((endInput as any).dataset.lon), state.graph);
+    if (!_state.graph) return;
+    const nearestS = _findNearestNode(parseFloat((startInput as any).dataset.lat), parseFloat((startInput as any).dataset.lon), _state.graph);
+    const nearestE = _findNearestNode(parseFloat((endInput as any).dataset.lat), parseFloat((endInput as any).dataset.lon), _state.graph);
     const feedbackEl = document.getElementById('search-feedback') as HTMLDivElement;
     if (!nearestS || !nearestE) {
       feedbackEl.textContent = 'Could not find nearby path nodes for one or both selected places.';
       return;
     }
-    state.startKey = nearestS.key;
-    state.endKey = nearestE.key;
-    placeMarker('start', nearestS.lat, nearestS.lng);
-    placeMarker('end', nearestE.lat, nearestE.lng);
-    tryRoute();
+    _state.startKey = nearestS.key;
+    _state.endKey = nearestE.key;
+    _placeMarker('start', nearestS.lat, nearestS.lng);
+    _placeMarker('end', nearestE.lat, nearestE.lng);
+    _tryRoute();
   }
 }
 
-/** Simple debounce helper */
-function debounce<F extends (...args: any[]) => void>(fn: F, wait: number): F {
+/** Simple _debounce helper */
+function _debounce<F extends (...args: any[]) => void>(fn: F, wait: number): F {
   let t: any = null;
   const wrapped = function(this: any, ...args: Parameters<F>) {
     clearTimeout(t);
@@ -359,39 +359,39 @@ function debounce<F extends (...args: any[]) => void>(fn: F, wait: number): F {
   return wrapped;
 }
 
-/** onMapClick: handle click -> snap to node */
-function onMapClick(e: any): void {
-  if (!state.graph) return;
+/** _onMapClick: handle click -> snap to node */
+function _onMapClick(e: any): void {
+  if (!_state.graph) return;
   const { lat, lng } = e.latlng as { lat: number; lng: number };
-  const nearest = findNearestNode(lat, lng, state.graph);
+  const nearest = _findNearestNode(lat, lng, _state.graph);
   if (!nearest) {
     alert('No nearby path node found.');
     return;
   }
 
-  if (state.mode === 'start') {
-    state.startKey = nearest.key;
-    placeMarker('start', nearest.lat, nearest.lng);
+  if (_state.mode === 'start') {
+    _state.startKey = nearest.key;
+    _placeMarker('start', nearest.lat, nearest.lng);
   } else {
-    state.endKey = nearest.key;
-    placeMarker('end', nearest.lat, nearest.lng);
+    _state.endKey = nearest.key;
+    _placeMarker('end', nearest.lat, nearest.lng);
   }
 
-  tryRoute();
+  _tryRoute();
 }
 
-/** clearAll: reset UI and state */
-function clearAll(): void {
-  state.startKey = null;
-  state.endKey = null;
-  if (state.startMarker) { state.map.removeLayer(state.startMarker); state.startMarker = null; }
-  if (state.endMarker) { state.map.removeLayer(state.endMarker); state.endMarker = null; }
-  if (state.routeLine) { state.map.removeLayer(state.routeLine); state.routeLine = null; }
-  setDistanceLabel('');
+/** _clearAll: reset UI and _state */
+function _clearAll(): void {
+  _state.startKey = null;
+  _state.endKey = null;
+  if (_state.startMarker) { _state.map.removeLayer(_state.startMarker); _state.startMarker = null; }
+  if (_state.endMarker) { _state.map.removeLayer(_state.endMarker); _state.endMarker = null; }
+  if (_state.routeLine) { _state.map.removeLayer(_state.routeLine); _state.routeLine = null; }
+  _setDistanceLabel('');
 }
 
-/** placeMarker: place start/end markers */
-function placeMarker(which: 'start' | 'end', lat: number, lng: number): void {
+/** _placeMarker: place start/end markers */
+function _placeMarker(which: 'start' | 'end', lat: number, lng: number): void {
   const icon = L.divIcon({
     className: 'custom-marker',
     html: `<div style="background:${which === 'start' ? '#22c55e' : '#ef4444'};width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 2px rgba(0,0,0,.6);"></div>`,
@@ -399,60 +399,60 @@ function placeMarker(which: 'start' | 'end', lat: number, lng: number): void {
     iconAnchor: [7, 7]
   });
   const marker = L.marker([lat, lng], { icon });
-  marker.addTo(state.map);
+  marker.addTo(_state.map);
 
   if (which === 'start') {
-    if (state.startMarker) state.map.removeLayer(state.startMarker);
-    state.startMarker = marker;
+    if (_state.startMarker) _state.map.removeLayer(_state.startMarker);
+    _state.startMarker = marker;
   } else {
-    if (state.endMarker) state.map.removeLayer(state.endMarker);
-    state.endMarker = marker;
+    if (_state.endMarker) _state.map.removeLayer(_state.endMarker);
+    _state.endMarker = marker;
   }
 }
 
-/** setDistanceLabel: update UI */
-function setDistanceLabel(text: string): void {
+/** _setDistanceLabel: update UI */
+function _setDistanceLabel(text: string): void {
   const el = document.getElementById('distance-label') as HTMLSpanElement;
   el.textContent = text;
 }
 
-/** tryRoute: compute and draw shortest path */
-function tryRoute(): void {
-  if (!state.startKey || !state.endKey || !state.graph) return;
-  if (state.startKey === state.endKey) {
-    if (state.routeLine) { state.map.removeLayer(state.routeLine); state.routeLine = null; }
-    setDistanceLabel('Start and End are the same node.');
+/** _tryRoute: compute and draw shortest path */
+function _tryRoute(): void {
+  if (!_state.startKey || !_state.endKey || !_state.graph) return;
+  if (_state.startKey === _state.endKey) {
+    if (_state.routeLine) { _state.map.removeLayer(_state.routeLine); _state.routeLine = null; }
+    _setDistanceLabel('Start and End are the same node.');
     return;
   }
 
-  if (state._routingInProgress) return;
-  state._routingInProgress = true;
+  if (_state._routingInProgress) return;
+  _state._routingInProgress = true;
 
-  const { path, distance } = dijkstra(state.graph, state.startKey, state.endKey);
+  const { path, distance } = _dijkstra(_state.graph, _state.startKey, _state.endKey);
   if (!path || path.length === 0 || !isFinite(distance)) {
-    if (state.startMarker) { state.map.removeLayer(state.startMarker); state.startMarker = null; }
-    if (state.endMarker) { state.map.removeLayer(state.endMarker); state.endMarker = null; }
-    setDistanceLabel('No route found between the selected points.');
-    state._routingInProgress = false;
+    if (_state.startMarker) { _state.map.removeLayer(_state.startMarker); _state.startMarker = null; }
+    if (_state.endMarker) { _state.map.removeLayer(_state.endMarker); _state.endMarker = null; }
+    _setDistanceLabel('No route found between the selected points.');
+    _state._routingInProgress = false;
     return;
   }
 
   const latlngs: LatLngTuple[] = path.map(k => {
-    const n = state.graph!.nodes.get(k)!;
+    const n = _state.graph!.nodes.get(k)!;
     return [n.lat, n.lng];
   });
 
-  if (state.routeLine) state.map.removeLayer(state.routeLine);
-  state.routeLine = L.polyline(latlngs, { color: '#2563eb', weight: 6, opacity: 0.85, className: 'route-line' });
-  state.routeLine.addTo(state.map);
+  if (_state.routeLine) _state.map.removeLayer(_state.routeLine);
+  _state.routeLine = L.polyline(latlngs, { color: '#2563eb', weight: 6, opacity: 0.85, className: 'route-line' });
+  _state.routeLine.addTo(_state.map);
 
-  const pretty = formatMeters(distance);
-  setDistanceLabel(`Distance: ${pretty}`);
-  state._routingInProgress = false;
+  const pretty = _formatMeters(distance);
+  _setDistanceLabel(`Distance: ${pretty}`);
+  _state._routingInProgress = false;
 }
 
-/** buildGraphFromGeoJSON: parse and build graph */
-function buildGraphFromGeoJSON(geojson: any): Graph {
+/** _buildGraphFromGeoJSON: parse and build graph */
+function _buildGraphFromGeoJSON(geojson: any): Graph {
   const nodes: Map<string, GraphNode> = new Map();
   const bounds = L.latLngBounds([]);
   const displayFeatures: any[] = [];
@@ -474,7 +474,7 @@ function buildGraphFromGeoJSON(geojson: any): Graph {
     if (aKey === bKey) return;
     const a = nodes.get(aKey)!;
     const b = nodes.get(bKey)!;
-    const w = haversine(a.lat, a.lng, b.lat, b.lng);
+    const w = _haversine(a.lat, a.lng, b.lat, b.lng);
     a.neighbors.set(bKey, Math.min(a.neighbors.get(bKey) ?? Infinity, w));
     b.neighbors.set(aKey, Math.min(b.neighbors.get(aKey) ?? Infinity, w));
   }
@@ -516,13 +516,13 @@ function buildGraphFromGeoJSON(geojson: any): Graph {
   return { nodes, bounds, displayFeatures };
 }
 
-/** dijkstra: shortest path */
-function dijkstra(graph: Graph, startKey: string, endKey: string): { path: string[]; distance: number } {
+/** _dijkstra: shortest path */
+function _dijkstra(graph: Graph, startKey: string, endKey: string): { path: string[]; distance: number } {
   const dist = new Map<string, number>();
   const prev = new Map<string, string>();
   const visited = new Set<string>();
 
-  const pq = new MinHeap<{ key: string; d: number }>();
+  const pq = new _MinHeap<{ key: string; d: number }>();
   graph.nodes.forEach((_, k) => dist.set(k, Infinity));
   dist.set(startKey, 0);
   pq.push({ key: startKey, d: 0 });
@@ -560,8 +560,8 @@ function dijkstra(graph: Graph, startKey: string, endKey: string): { path: strin
   return { path, distance: dist.get(endKey) ?? Infinity };
 }
 
-/** Minimal binary min-heap for Dijkstra */
-class MinHeap<T extends { d: number }> {
+/** Minimal binary min-heap for _dijkstra */
+class _MinHeap<T extends { d: number }> {
   private a: T[] = [];
   isEmpty(): boolean { return this.a.length === 0; }
   push(x: T): void { this.a.push(x); this.bubbleUp(this.a.length - 1); }
@@ -594,19 +594,19 @@ class MinHeap<T extends { d: number }> {
   }
 }
 
-/** findNearestNode: nearest by haversine */
-function findNearestNode(lat: number, lng: number, graph: Graph): NearestNodeResult | null {
+/** _findNearestNode: nearest by _haversine */
+function _findNearestNode(lat: number, lng: number, graph: Graph): NearestNodeResult | null {
   let best: NearestNodeResult | null = null;
   let bestD = Infinity;
   for (const [k, n] of graph.nodes) {
-    const d = haversine(lat, lng, n.lat, n.lng);
+    const d = _haversine(lat, lng, n.lat, n.lng);
     if (d < bestD) { bestD = d; best = { key: k, lat: n.lat, lng: n.lng, d }; }
   }
   return best;
 }
 
-/** haversine: distance in meters */
-function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+/** _haversine: distance in meters */
+function _haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371000;
   const toRad = (x: number) => x * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
@@ -616,15 +616,15 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number): numb
   return R * c;
 }
 
-/** formatMeters: pretty distance */
-function formatMeters(m: number): string {
+/** _formatMeters: pretty distance */
+function _formatMeters(m: number): string {
   if (m < 1000) return `${m.toFixed(0)} m`;
   return `${(m / 1000).toFixed(2)} km`;
 }
 
 // Initialize when DOM ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initMap);
+  document.addEventListener('DOMContentLoaded', _initMap);
 } else {
-  initMap();
+  _initMap();
 }
