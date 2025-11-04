@@ -106,6 +106,7 @@ function _initMap(): void {
   _state.map = L.map('map');
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    minZoom: 16,
     maxZoom: 20,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(_state.map);
@@ -128,7 +129,8 @@ function _initMap(): void {
         const [minX, minY, maxX, maxY] = data.bbox as [number, number, number, number];
         _state.map.fitBounds([[minY, minX], [maxY, maxX]]);
       } else {
-        _state.map.setView([39.255, -76.712], 15);
+        //_state.map.setView([39.255, -76.712], 15);
+        _state.map.setView([40, -70], 15);
       }
 
       _attachHandlers();
