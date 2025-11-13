@@ -87,6 +87,7 @@ function _initMap() {
         else {
             //_state.map.setView([39.255, -76.712], 15);
             _state.map.setView([40, -70], 15);
+            _state.map.locate();
         }
         _attachHandlers();
     })
@@ -330,6 +331,10 @@ function _clearAll() {
         _state.routeLine = null;
     }
     _setDistanceLabel('');
+    const startInput = document.getElementById('start-input');
+    const endInput = document.getElementById('end-input');
+    startInput.value = '';
+    endInput.value = '';
 }
 /** _placeMarker: place start/end markers */
 function _placeMarker(which, lat, lng) {

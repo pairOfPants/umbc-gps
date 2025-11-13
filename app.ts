@@ -131,6 +131,7 @@ function _initMap(): void {
       } else {
         //_state.map.setView([39.255, -76.712], 15);
         _state.map.setView([40, -70], 15);
+        _state.map.locate();
       }
 
       _attachHandlers();
@@ -377,6 +378,11 @@ function _clearAll(): void {
   if (_state.endMarker) { _state.map.removeLayer(_state.endMarker); _state.endMarker = null; }
   if (_state.routeLine) { _state.map.removeLayer(_state.routeLine); _state.routeLine = null; }
   _setDistanceLabel('');
+  const startInput = document.getElementById('start-input') as HTMLInputElement;
+  const endInput = document.getElementById('end-input') as HTMLInputElement;
+  startInput.value = '';
+  endInput.value = '';
+
 }
 
 /** _placeMarker: place start/end markers */
