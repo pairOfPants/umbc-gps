@@ -19,13 +19,14 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function MapRoutePage({ onBackToSplash }) {
+export default function MapRoutePage({ onBackToSplash, user }) {
   const [leftPct, setLeftPct] = useState(50);
   const [activeStep, setActiveStep] = useState(1);
   const [showSavedRoutes, setShowSavedRoutes] = useState(false);
   const [confirmRoute, setConfirmRoute] = useState(null);
   const [startInput, setStartInput] = useState("");
   const [destInput, setDestInput] = useState("");
+  const userDisplayName = user?.displayName || user?.email || null;
 
   // bottom bar modals
   const [open, setOpen] = useState(null); // 'how', 'a11y', 'settings'
@@ -157,6 +158,12 @@ export default function MapRoutePage({ onBackToSplash }) {
         </div>
 
         <div className="flex items-center gap-3 ml-auto">
+          {userDisplayName && (
+            <div className="text-right mr-1 leading-tight text-white">
+              <p className="text-xs uppercase tracking-wide text-white/70">Signed in</p>
+              <p className="font-semibold">{userDisplayName}</p>
+            </div>
+          )}
           <button
             onClick={() => setShowSavedRoutes(true)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold border"
@@ -169,6 +176,7 @@ export default function MapRoutePage({ onBackToSplash }) {
             aria-label="Logout"
             className="rounded-full p-2 border border-gray-600 hover:bg-white/10"
             style={{ color: brand.gold }}
+            title="Log out"
           >
             <LogOut className="h-5 w-5" />
           </button>

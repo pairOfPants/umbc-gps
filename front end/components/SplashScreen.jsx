@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion'
 
-export default function SplashScreen({ onLogin, onGuest }) {
+export default function SplashScreen({ onLogin, onGuest, authError, isAuthenticating }) {
   const prefersReducedMotion = useReducedMotion()
 
   // Accessibility prefs (shared app-wide via localStorage)
@@ -56,10 +56,11 @@ export default function SplashScreen({ onLogin, onGuest }) {
         <nav className="ml-auto flex items-center gap-3 lg:hidden">
           <button
             onClick={onLogin}
-            className="px-4 py-2 rounded-xl font-semibold border focus:outline-none focus-visible:ring-4"
+            disabled={isAuthenticating}
+            className="px-4 py-2 rounded-xl font-semibold border focus:outline-none focus-visible:ring-4 disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ backgroundColor: brand.black, borderColor: '#2b2b2b', color: brand.gold }}
           >
-            Log in
+            {isAuthenticating ? 'Signing in...' : 'Log in'}
           </button>
           <button
             onClick={onGuest}
@@ -106,10 +107,11 @@ export default function SplashScreen({ onLogin, onGuest }) {
               >
                 <button
                   onClick={onLogin}
-                  className="px-6 py-3 rounded-2xl font-semibold shadow-lg focus:outline-none focus-visible:ring-4"
+                  disabled={isAuthenticating}
+                  className="px-6 py-3 rounded-2xl font-semibold shadow-lg focus:outline-none focus-visible:ring-4 disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ backgroundColor: brand.black, color: brand.gold, border: '1px solid #2b2b2b' }}
                 >
-                  Log in
+                  {isAuthenticating ? 'Signing in...' : 'Log in'}
                 </button>
                 <button
                   onClick={onGuest}
@@ -119,6 +121,16 @@ export default function SplashScreen({ onLogin, onGuest }) {
                   Continue as guest
                 </button>
               </motion.div>
+
+              {authError && (
+                <p
+                  role="alert"
+                  className="mt-3 inline-flex rounded-2xl px-4 py-2 text-sm font-semibold"
+                  style={{ backgroundColor: '#fffdf5', color: '#8b0000', border: '1px solid #f3d2ab' }}
+                >
+                  {authError}
+                </p>
+              )}
 
               <p className="mt-3 text-sm opacity-80" style={{ color: '#1A1A1A' }}>
                 You can explore as a guest—no account needed.
