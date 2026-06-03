@@ -8,36 +8,36 @@
 
 
 
-## 📋 Table of Contents
-- [📖 Project Description](#project-description)
+## Table of Contents
+- [Project Description](#project-description)
   - [Abstract](#abstract)
   - [Purpose](#purpose)
-  - [✨ Features](#features)
-  - [🛠️ Technologies Used](#technologies-used)
-- [📚 Helpful Documentation](#helpful-documentation)
-  - [📊 Use Case Diagram](#use-case-diagram)
-  - [🗄️ Entity Relationship Diagram](#entity-relationship-diagram)
-  - [📄 High Level Documentation](#high-level-documentation)
-  - [🚀 Sprint Progress](#sprint-progress)
-- [🚀 How to Run the Project](#how-to-run-the-project)
-  - [🏠 How to run locally](#how-to-run-locally)
-    - [1️⃣ Install all required dependencies](#1-install-all-required-dependencies)
-      - [📦 Dependency List](#dependency-list)
-    - [2️⃣ Running the project](#2-running-the-project)
-  - [☁️ How to deploy](#how-to-deploy)
-    - [1️⃣ Install all required dependencies](#1-install-all-required-dependencies-1)
-    - [2️⃣ Build the Project](#2-build-the-project)
-    - [3️⃣ Firebase Deployment](#3-firebase-deployment)
-- [📱 How to Use the Project](#how-to-use-the-project)
-  - [👤 Navigation as a Guest](#navigation-as-a-guest)
-  - [🎓 Navigation as an Official User](#navigation-as-an-official-user)
-  - [⚙️ Navigation as an Admin](#navigation-as-an-admin)
-  - [📱 Navigation on Mobile](#navigation-on-mobile)
-- [🔮 Future Improvements](#future-improvements)
-- [👥 Credits](#credits)
-- [⚖️ License](#license)
+  - [Features](#features)
+  - [Technologies Used](#technologies-used)
+- [Helpful Documentation](#helpful-documentation)
+  - [Use Case Diagram](#use-case-diagram)
+  - [Entity Relationship Diagram](#entity-relationship-diagram)
+  - [High Level Documentation](#high-level-documentation)
+  - [Sprint Progress](#sprint-progress)
+- [How to Run the Project](#how-to-run-the-project)
+  - [How to run locally](#how-to-run-locally)
+    - [1 Install all required dependencies](#1-install-all-required-dependencies)
+      - [Dependency List](#dependency-list)
+    - [2 Running the project](#2-running-the-project)
+  - [How to deploy](#how-to-deploy)
+    - [1 Install all required dependencies](#1-install-all-required-dependencies-1)
+    - [2 Build the Project](#2-build-the-project)
+    - [3 Firebase Deployment](#3-firebase-deployment)
+- [How to Use the Project](#how-to-use-the-project)
+  - [Navigation as a Guest](#navigation-as-a-guest)
+  - [Navigation as an Official User](#navigation-as-an-official-user)
+  - [Navigation as an Admin](#navigation-as-an-admin)
+  - [Navigation on Mobile](#navigation-on-mobile)
+- [Future Improvements](#future-improvements)
+- [Credits](#credits)
+- [License](#license)
 
-## 📖 Project Description
+## Project Description
 #### Abstract
 The University of Maryland, Baltimore County, is a public university with a student body of 15 thousand undergraduates (est 2023), and a subset of those students have mobility impairments. While UMBC is an inclusive campus, providing alternate transportation routes for such students, the location of said alternate routes may not be inherently obvious. There exist online maps of the campus for incoming students to plan their routes across the university, as well as guideposts throughout campus, but none highlight the aforementioned alternate routes. 
 #### Purpose:
@@ -45,7 +45,7 @@ Our project does not reinvent the wheel and utilizes existing technology to prov
 	
 Although there are existing paper maps of nonstandard routes, procured by the Department of Student Disability Services, there are not enough for every student, and some may get lost. Our solution allows for anyone to access easy navigation through UMBC with nothing but a cell phone and network connection.
 
-#### ✨ Features
+#### Features
 * Realtime location updated based on custom-made map
 * Navigation inside campus buildings
 * Estimated time arrival (ETA) for proper timing
@@ -54,7 +54,7 @@ Although there are existing paper maps of nonstandard routes, procured by the De
 * Administrative Dashboard where routes can be added, edited, and deleted in realtime on client maps
 * In accordance with all proper privacy practices, as stated by the University of Maryland, Baltimore County Privacy Policy
 
-#### 🛠️ Technologies Used
+#### Technologies Used
 * Google OAuth API (for logging in)
 * Firebase (database & deployment)
 * NodeJs, NextJs, Leaflet (UI)
@@ -62,14 +62,14 @@ Although there are existing paper maps of nonstandard routes, procured by the De
 * Open Source Routing Machine (for live directions)
 
 
-### 📚 Helpful Documentation
+### Helpful Documentation
 #### Use Case Diagram
 ![Full Use Case Diagram](./front%20end/public/assets/diagrams/use-case/full-use-case-diagram.png)
 
-### 🗄️ Entity Relationship Diagram
+### Entity Relationship Diagram
 ![ER Diagram](./front%20end/public/assets/diagrams/entity-relation/ER.png)
 
-### 📄 High Level Documentation
+### High Level Documentation
 *These documents show how the system works at a high level. The most comprehensive of all documentation, as well as your first source for questions, is the SRS document. For more specific questions regarding one specific component of this project, additional resources can be found below the SRS.* 
 
 SRS Document: **Will upload when final SRS is finalized**
@@ -80,7 +80,7 @@ User Interface Design Document: [HERE](./assets/User%20Interface%20Design%20Docu
 
 Testing Document: [HERE](./assets/Software%20Testing%20Document.pdf)
 
-### 🚀 Sprint Progress
+### Sprint Progress
 *These Documents show less of the final product's functionality, and instead are a testament of how Fetch My Route! was created from the ground up. Therefore, view these documents not as "how to's" or sources of information, but instead as monthly updates which improve over time.*
 
 Project Proposal Document: [HERE](./assets/Project%20Proposal%20Document.pdf)
@@ -93,12 +93,12 @@ Sprint Report 3: **Will upload at the conclusion of Sprint 3**
 
 
 
-## 🚀 How to Run the Project
+## How to Run the Project
 Fetch my Route features 2 main methods of running the project. One can either run it locally or deploy the website to the internet. See below for appropriate instructions depending on use case.
-### 🏠 How to run locally
+### How to run locally
 In order to get this project set up and working on your device, there are a few steps that must be taken. Given more time to develop this project, it is a goal to automate this process, however no such automation exists yet for this project. With that being said, follow these steps and you should be fine. These steps should be completed after cloning the repository
-#### 1️⃣ Install all required dependencies
-##### 📦 Dependency List
+#### 1 Install all required dependencies
+##### Dependency List
 There exists a file in this repository called dependencies.txt, which has all dependency information listed there. For convenience, I will also show the file contents below:
 
 ├── @emnapi/runtime@1.7.1 extraneous
@@ -143,7 +143,7 @@ npm ci
 ```
 This uses package-lock.json to install exact versions from last successful install. More reliable than npm install for reproducibility.
 
-#### 2️⃣ Running the project
+#### 2 Running the project
 Once all dependencies are installed, spinning up the local server is as simple as running the command:
 ```js
 npm run dev
@@ -152,20 +152,20 @@ Then, in a local broswer, navigate to port 3000 on localhost. You should see the
 
 **Please note that the root directory for all npm commands is located at ```./front\ end/``` so running the above commands outside that directory will result in errors.**
 
-### ☁️ How to deploy
+### How to deploy
 Due to the limited time circumstances faced in developing this project, this project was deployed using Firebase's website deployment feature. For a more permanent home, it is advices that a domian is officially purchased and hosted through a more reputable source, such as CloudFlare. With that being said, below are the instructions to get it working on firebase, assuming you have the necessary database files (which do not come with this project as that violates the UMBC Privacy Policy). These steps should be done after cloning this repo.
 
-#### 1️⃣ Install all required dependencies
+#### 1 Install all required dependencies
 See [How to run locally](#how-to-run-locally) for these instructions
 
-#### 2️⃣ Build the Project
+#### 2 Build the Project
 After configuring npm for this project, you can perform a full build by running the command
 ```js
 npm run build
 ```
 
 This allows us to move to step 3.
-#### 3️⃣ Firebase Deployment
+#### 3 Firebase Deployment
 Again, this step assumes the firebase project exists and the database is correctly configured. No help can be offered with this, but if you need to create the DB from scratch, the ER diagram is provided above. Then, you must install firebase and firebase-admin
 ```js
 npm install firebase firebase-admin
@@ -182,13 +182,13 @@ firebase deploy
 ```
 
 
-## 📱 How to Use the Project
+## How to Use the Project
 This next section comprehensively describes how to use Fetch My Route! and highlights all core features. To avoid an overly-verbose README, I will try to keep explanations brief as the User-Interface is intentionally designed to be familiar to users who have used navigation software before (Google Maps, Waze, Apple Maps, etc.). 
 
 The first screen the user is greeted with is the splash screen, where users can log in with an email address or continue to view the site as a guest. If they choose to log in, anyone with a valid UMBC email address (students and faculty) already has an account created for them. Just log in with google and you are good to go. If you do not have a UMBC email address, then certain functionality of this website are off-limits (indoor navigation, saving routes) due to their inclusion violating the University's Privacy Policy. After either logging in or continuing as a guest, the next screen the user will face is the main routing screen. Functionality differs on this screen based on the user's status.
 ![alt text](./assets/SpashScreen.png)
 
-### 👤 Navigation as a Guest
+### Navigation as a Guest
 If the user continues as a guest, they have access to the majority of core funcionality and can view the exterior map, find routes, and search for campus buildings. ![alt text](./assets/guestMapScreen.png) The user can utilize the split screen mechanic by hovering their mouse over the yellow circular button, which then allows the user to snap the view to just one screen, or reset the view to the default (seen above). The users can search for campus buildings either one of three ways:
 1. Typing in start and end buildings using the smart search bars
 2. Toggling the *Map Click* button allows the users to select start/end locations by clicking
@@ -205,7 +205,7 @@ If a user tries to save this route by hitting the *Save Route* button, they are 
 
 Finally, to clear the screen after a route is completed, the user can hit the *Clear* button and the map will reset to its default state. 
 
-### 🎓 Navigation as an Official User
+### Navigation as an Official User
 All guest functioanlity is available to logged in users, so reading the above section is necessary. The main differences are that a logged in user can save/load routes across devices, and (eventually) the logged-in users will be able to view floorplan data if they are stuck navigating inside a building. The User Interface is also slighyly different, as there is an indicator that you are logged in on the top right of the screen. 
 
 Here is the sequence of displayes a logged-in user will come across when they load a saved route:
@@ -216,7 +216,7 @@ Here is the sequence of displayes a logged-in user will come across when they lo
 ![alt text](./assets/UserSavedRouteOnMap.png)
 
 And proceed with the route as normal.
-### ⚙️ Navigation as an Admin
+### Navigation as an Admin
 **It is essential to note that none of the User Interface design choices in the following screens are permanent, or even polished. With our group's deadline approaching, we chose to prioritize functionality over style. If given the ability to continue this project, these screens would be changed *drastically***
 
 As an administrator, you are granted access to the Map Editor page, where the admin has a graphical way to add new routes, edit existing routes, or remove a route altogether. In this sense, I am defining the term route not as a complete guide from start to end, but as any given segment or set of segments that the user can navigate along. However, the first thing the administrator sees after logging in is a simple dashboard, presenting them with all of their options.
@@ -233,12 +233,12 @@ If the user clicks on a segment, it will highlight in yellow and the user then u
 
 *It is important to understand that any changes the Administrator makes to the map will be visible to all guests and normal accounts. If they make a mistake, hitting the **Reset Map** button will reset any changes made back to the base map of campus.*
 
-### 📱 Navigation on Mobile 
+### Navigation on Mobile 
 **Similar to the Admin pages, the user interface on mobile has scaling issues and is generally not the smoothest user experience. The priority was to show a working prototype and mobile UI refinement is one of the biggest ToDo's for this project, if we are given a future.**
 
 Navigating the mobile site is similar to navigation on a computer, but the horizontal scrollbar has its orientation switched to vertical, to better allign with a phone's screen resolution. All other components of navigation are similar to the desktop experience.
 
-## 🔮 Future Improvements
+## Future Improvements
 While the core functionality of the system is intact, there are still a number of bugs to squash and features that would elevate this project from a mere proof-of-concept to a deployable, usable, scalable feature of the UMBC digital infrastructure. Below is a non-exhaustive list of future improvements that would be made to this project, if it were selected by our stakeholders to be adopted by UMBC.
 
 1. Users can report blocked routes and send an email notification to Admin with said route outage
@@ -257,7 +257,7 @@ While the core functionality of the system is intact, there are still a number o
 
 
 
-## 👥 Credits
+## Credits
 ##### Meet the Team:
 Aidan Denham, [@pairOfPants](https://github.com/pairOfPants)
 
@@ -272,7 +272,7 @@ Alex Marbut, @
 These four developers have put in exceptional effort to complete this project in a timely manner. The advising UMBC professor on this project, Dr. Samit Shivadekar, may or may not have said 
 *"This group went above-and-beyond, exceeded all requirements, and any employers reading this should hire all four of these developers right now!"*
 
-## ⚖️ License
+## License
 At this point in time, this project is unlicensed. If the University of Maryland, Baltimore County decides to adopt this project, this fact will inevitably change.
 
 
